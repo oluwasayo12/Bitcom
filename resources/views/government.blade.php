@@ -19,7 +19,7 @@
                                                 <select class="form-control-sm form-control" name="lga">
                                                     <option>---Select Local Government---</option>
                                                     @foreach($local_gov as $data)
-                                                        <option value="{{ $data->lga_id }}" >{{ $data->lga_name }}</option>
+                                                        <option value="{{ $data->uniqueid }}" >{{ $data->lga_name }}</option>
                                                     @endforeach
                                                 </select>
                                             </div>

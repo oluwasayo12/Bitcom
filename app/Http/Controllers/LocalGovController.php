@@ -13,7 +13,7 @@ class LocalGovController extends Controller
     private $local_gov_list; 
 
     public function __construct(){
-        $this->local_gov_list = LocalGov::select('lga_id','lga_name')->where('lga_name', '!=', '')->get();
+        $this->local_gov_list = LocalGov::select('uniqueid','lga_name')->where('lga_name', '!=', '')->get();
     }
 
     /**
@@ -31,23 +31,15 @@ class LocalGovController extends Controller
 
         $lga_id =  $request->lga;
 
-        // echo $lga_id;
+        $lagUnit = LocalGov::with('pollingunit.puresults')->where('uniqueid', $lga_id)->first();
 
-        $lagUnit = LocalGov::where('lga_id', $lga_id)->first();
+        $out = [];
+        foreach($lagUnit->pollingunit as $value ){
 
-        // dd($lagUnit);
-        
-        $lagPollingUnitData = $lagUnit->pollingunit()->select('lga_id','polling_unit_id','polling_unit_name')->get();
-
-        // dd($lagPollingUnitData);
-
-        $TotalDataPerUnit = [];
-
-        foreach($lagPollingUnitData as $value){
-            $TotalDataPerUnit[$value['polling_unit_name']] = PuResults::where('polling_unit_uniqueid', $value['polling_unit_id'])->sum('party_score');
+            $out[$value['polling_unit_name']] = array_sum(array_column($value->puresults->toArray(), 'party_score')) ;
         }
 
-        return view('government', ['polling_unit_result' => $TotalDataPerUnit, 'lga' => $lagUnit->lga_name, 'local_gov' => $this->local_gov_list]);
+        return view('government', ['polling_unit_result' => $out, 'lga' => $lagUnit->lga_name, 'local_gov' => $this->local_gov_list]);
 
     }
 
